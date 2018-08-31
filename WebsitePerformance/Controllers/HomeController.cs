@@ -7,9 +7,12 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Xml;
 using Microsoft.Ajax.Utilities;
 using Newtonsoft.Json;
+using WebsitePerformance.Helpers;
 using WebsitePerformance.Models;
 using WebsitePerformance.ModelView;
 
@@ -29,100 +32,128 @@ namespace WebsitePerformance.Controllers
             _db.Dispose();
         }
 
-        public ActionResult Index()
-        {
-            return View(CreateAddModelView());
-        } 
+        public ActionResult Index() => View(new AddModelView(){PageResponses = null});
 
-        private AddModelView CreateAddModelView() => new AddModelView
+        private AddModelView CreateAddModelView(string url)
+        {
+            var pageResponses = new List<Tuple<string, int, int>>();
+            var siteInDb = _db.Sites.Single(s => s.Url == url);
+            foreach (var pageUrl in siteInDb.PageUrls)
             {
-                MaxId = _db.TestedSites.Any() ? _db.TestedSites.Max(s => s.Id) : 0,
-                TestedSites = _db.TestedSites.OrderByDescending(s => s.MaxTime).ToList(),
-                MaxTimeJSON = JsonConvert.SerializeObject(_db.TestedSites.Select(s => new { label = s.Url, y = s.MaxTime }).ToList()),
-                MinTimeJSON = JsonConvert.SerializeObject(_db.TestedSites.Select(s => new { label = s.Url, y = s.MinTime }).ToList())
+                pageResponses.Add(new Tuple<string, int, int>(pageUrl,
+                    _db.PageResponses.ToList().FindAll(p => p.Url == pageUrl).Max(u => u.ResponseTime),
+                    _db.PageResponses.ToList().FindAll(p => p.Url == pageUrl).Min(u => u.ResponseTime)));
+            }
+            return new AddModelView
+            {
+                PageResponses = pageResponses,
+
+                MaxTimeJSON = JsonConvert.SerializeObject(_db.Sites.Single(u => u.Url == url)
+                    .PageResponses.Select(r => new
+                    {
+                        label = r.Url,
+                        y = _db.PageResponses.ToList()
+                            .FindAll(p => p.Url == r.Url).Max(u => u.ResponseTime)
+                    }).DistinctBy(s => s.label)),
+
+                MinTimeJSON = JsonConvert.SerializeObject(_db.Sites.Single(u => u.Url == url)
+                    .PageResponses.Select(r => new
+                    {
+                        label = r.Url,
+                        y = _db.PageResponses.ToList()
+                            .FindAll(p => p.Url == r.Url).Min(u => u.ResponseTime)
+                    }).DistinctBy(s => s.label))
             };
+        }
 
 
         [HttpPost]
-        public ActionResult Add(TestedSite testedSite)
+        public ActionResult Add(string url)
         {
             if (!ModelState.IsValid)
-                return View("Index", CreateAddModelView());
+                return View("Index", new AddModelView(){PageResponses = null});
 
-            if (!testedSite.Url.EndsWith("/")) testedSite.Url += "/";
-            try
+            var siteInDb = _db.Sites.SingleOrDefault(s => s.Url == url);
+            if (siteInDb != null)
             {
-                var sitemapReqTime = SitemapRequest(testedSite.Url);
-                var siteInDb = _db.TestedSites.SingleOrDefault(s => s.Url == testedSite.Url);
-
-                if (siteInDb != null)
+                foreach (var pageUrl in siteInDb.PageUrls)
                 {
-                    UpdateTime(siteInDb, sitemapReqTime);
-                }
-                else
-                {
-                    UpdateTime(testedSite, sitemapReqTime);
-                    _db.TestedSites.Add(testedSite);
+                    var resTime = sendReqAndMeasureResTime(pageUrl);
+                    _db.PageResponses.Add(new PageResponse() {ResponseTime = resTime, SiteId = siteInDb.Id, Url = pageUrl});
+                    siteInDb.PageResponses.Add(new PageResponse() { ResponseTime = resTime, SiteId = siteInDb.Id, Url = pageUrl });
                 }
             }
-            catch (WebException exRobot)
-            { 
-                ModelState.AddModelError(string.Empty, exRobot.Message + " Site don't have a sitemap");
-                return View("Index", CreateAddModelView());
+            else
+            {
+                try
+                {
+                    var responseUrls = GetSitemapUrls(url);
+                    var site = new Site() { Url = url, Id = _db.Sites.Count() + 1};
+                    _db.Sites.Add(site);
+                    foreach (var response in responseUrls)
+                    {
+                        var resTime = sendReqAndMeasureResTime(response);
+                        _db.PageResponses.Add(new PageResponse()
+                        {
+                            ResponseTime = resTime,
+                            Url = response,
+                            SiteId = site.Id
+                        });
+                        site.PageUrls.Add(response);
+                        site.PageResponses.Add(new PageResponse()
+                        {
+                            ResponseTime = resTime,
+                            Url = response,
+                            SiteId = site.Id
+                        });
+                    }
+                }
+                catch (WebException e)
+                {
+                    ModelState.AddModelError(string.Empty, e.Message + " Site don't have a sitemap");
+                    return View("Index", new AddModelView(){PageResponses = null});
+                }
             }
 
             _db.SaveChanges();
-            return RedirectToAction("Index", "Home");
+            return View("Index", CreateAddModelView(url));
         }
 
-        private static void UpdateTime(TestedSite site, int time)
+        private List<string> GetSitemapUrls(string url)
         {
-            if (time > site.MaxTime || site.MaxTime == null) site.MaxTime = time;
-            if (time < site.MinTime || site.MinTime == null) site.MinTime = time;
-        }
-
-        private int SitemapRequest(string url)
-        {
-            var timer = new Stopwatch();
-            timer.Start();
+            List<string> result;
             try
             {
-                var request = WebRequest.Create(url + "sitemap.xml");
-                using (var response = request.GetResponse()){}
+                 result = SiteMapHelper.GetPageUrls(url + "sitemap.xml");
             }
             catch (WebException)
             {
-                    var robot = GetUrlFromRobots(url);
-                    var request = WebRequest.Create(robot);
-                using (var response = request.GetResponse()){}
+                 result = SiteMapHelper.GetPageUrls(SiteMapHelper.GetUrlFromRobots(url));  
             }
+
+            return result;
+        }
+
+        
+
+        private int sendReqAndMeasureResTime(string url)
+        {
+            var timer = new Stopwatch();
+            timer.Start();
+
+            var request = WebRequest.Create(url);
+            try
+            {
+                using (request.GetResponse()) { }
+            }
+            catch (Exception)
+            {
+                // ignore all exceptions
+            }
+
             timer.Stop();
             var time = timer.Elapsed.Milliseconds;
             return time;
         }
-
-        private string GetUrlFromRobots(string url)
-        {
-            var resultUrl = "";
-            var request = WebRequest.Create(url + "robots.txt");
-            using (var response = request.GetResponse())
-            {
-                using (var stream = response.GetResponseStream())
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var line = "";
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            if (line.Contains("Sitemap:"))
-                                resultUrl = line.Substring(9);
-                        }
-                    }
-                }
-            }
-            return resultUrl;
-        }
-
-
     }
 }

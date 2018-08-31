@@ -6,7 +6,6 @@
 <div>
     @using (Html.BeginForm("Add", "Home"))
     {
-
         <div class="form-group">
             @Html.Label("Enter the URL")
             @Html.TextBox("Url", "", new { @class = "form-control" })
@@ -16,7 +15,6 @@
             @Html.ValidationSummary(false, "", new { @class = "text-danger" })
         </div>
 
-        @Html.Hidden("Id", Model.MaxId)
         <div class="form-group">
             <button type="submit" class="btn btn-primary">Get sitemap</button>
         </div>
@@ -35,14 +33,17 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var site in Model.TestedSites)
-            {
-                <tr>
-                    <td>@site.Url</td>
-                    <td>@site.MaxTime ms</td>
-                    <td>@site.MinTime ms</td>
-                </tr>
-            }
+        @if (Model.PageResponses != null)
+        {
+            foreach (var page in Model.PageResponses)
+             {
+                 <tr>
+                     <td>@page.Item1</td>
+                     <td>@page.Item2 ms</td>
+                     <td>@page.Item3 ms</td>
+                 </tr>
+             }
+        }
         </tbody>
     </table>
 </div>
@@ -61,7 +62,7 @@
             axisY: {
                 title: "Time in ms"
             },
-            dataPointWidth: 30,
+            dataPointWidth: 10,
             data: [
             {
                 type: "column",

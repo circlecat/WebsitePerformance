@@ -10,7 +10,7 @@ namespace WebsitePerformance.Models
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            var testedSite = (TestedSite)validationContext.ObjectInstance;
+            var testedSite = (Site)validationContext.ObjectInstance;
             return Uri.TryCreate(testedSite.Url, UriKind.Absolute, out var resulUri) 
                    && (resulUri.Scheme == Uri.UriSchemeHttp || resulUri.Scheme == Uri.UriSchemeHttps) ?
                    ValidationResult.Success : new ValidationResult("You should enter a valid URL. Example: https://www.example.com/");

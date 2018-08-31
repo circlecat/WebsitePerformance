@@ -8,6 +8,8 @@ namespace WebsitePerformance.Models
 {
     public class ApplicationDbContext : DbContext
     {
-        public DbSet<TestedSite> TestedSites { get; set; }
+        public DbSet<PageResponse> PageResponses { get; set; }
+
+        public DbSet<Site> Sites { get; set; }
     }
 }

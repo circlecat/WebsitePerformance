@@ -152,17 +152,15 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201808221010240_Create.cs" />
-    <Compile Include="Migrations\201808221010240_Create.Designer.cs">
-      <DependentUpon>201808221010240_Create.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201808221015353_ModelTestedSiteChanged.cs" />
-    <Compile Include="Migrations\201808221015353_ModelTestedSiteChanged.Designer.cs">
-      <DependentUpon>201808221015353_ModelTestedSiteChanged.cs</DependentUpon>
+    <Compile Include="Helpers\SiteMapHelper.cs" />
+    <Compile Include="Migrations\201808311521262_Create tables.cs" />
+    <Compile Include="Migrations\201808311521262_Create tables.Designer.cs">
+      <DependentUpon>201808311521262_Create tables.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
-    <Compile Include="Models\TestedSite.cs" />
+    <Compile Include="Models\PageResponse.cs" />
+    <Compile Include="Models\Site.cs" />
     <Compile Include="Models\UrlValidation.cs" />
     <Compile Include="ModelView\AddModelView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -225,11 +223,8 @@
     <Content Include="Scripts\jquery-3.3.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201808221010240_Create.resx">
-      <DependentUpon>201808221010240_Create.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201808221015353_ModelTestedSiteChanged.resx">
-      <DependentUpon>201808221015353_ModelTestedSiteChanged.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201808311521262_Create tables.resx">
+      <DependentUpon>201808311521262_Create tables.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
