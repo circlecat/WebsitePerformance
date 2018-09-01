@@ -21,8 +21,14 @@ input,
 select,
 textarea {
     max-width: 280px;
+    position: relative;
+}
+
+#measurement-table {
+    position: relative;
+    margin-top: 45%;
 }
 
 #site-table {
-    margin-top: 45%;
+    margin-bottom: 5%;
 }

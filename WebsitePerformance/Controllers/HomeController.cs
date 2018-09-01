@@ -34,7 +34,7 @@ namespace WebsitePerformance.Controllers
             _db.Dispose();
         }
 
-        public ActionResult Index() => View(new AddModelView(){PageResponses = null});
+        public ActionResult Index() => View(new AddModelView(){PageResponses = null, Sites = _db.Sites.ToList()});
 
         private AddModelView CreateAddModelView(string url)
         {
@@ -48,6 +48,8 @@ namespace WebsitePerformance.Controllers
             }
             return new AddModelView
             {
+                CurrentSiteUrl = siteInDb.Url,
+                Sites = _db.Sites.ToList(),
                 PageResponses = pageResponses.OrderByDescending(u => u.Item2).ToList(), 
 
                 MaxTime = JsonConvert.SerializeObject(siteInDb
@@ -73,7 +75,7 @@ namespace WebsitePerformance.Controllers
         public ActionResult Add(string url)
         {
             if (!ModelState.IsValid)
-                return View("Index", new AddModelView(){PageResponses = null});
+                return View("Index", new AddModelView(){PageResponses = null, Sites = _db.Sites.ToList() });
 
             var siteInDb = _db.Sites.SingleOrDefault(s => s.Url == url);
             if (siteInDb != null)
@@ -100,7 +102,7 @@ namespace WebsitePerformance.Controllers
                 catch (WebException e)
                 {
                     ModelState.AddModelError(string.Empty, e.Message + " Site don't have a sitemap");
-                    return View("Index", new AddModelView(){PageResponses = null});
+                    return View("Index", new AddModelView(){PageResponses = null, Sites = _db.Sites.ToList() });
                 }
             }
 
@@ -162,5 +164,7 @@ namespace WebsitePerformance.Controllers
             var time = timer.Elapsed.Milliseconds;
             return time;
         }
+
+        public ActionResult ViewResults(string siteurl) => View("Index", CreateAddModelView(siteurl));
     }
 }
