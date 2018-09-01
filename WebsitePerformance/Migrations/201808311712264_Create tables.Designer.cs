@@ -13,7 +13,7 @@ namespace WebsitePerformance.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201808311521262_Create tables"; }
+            get { return "201808311712264_Create tables"; }
         }
         
         string IMigrationMetadata.Source

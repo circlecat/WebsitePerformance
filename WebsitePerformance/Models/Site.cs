@@ -14,5 +14,11 @@ namespace WebsitePerformance.Models
         public List<string> PageUrls { get; set; }
 
         public List<PageResponse> PageResponses { get; set; }
+
+        public Site()
+        {
+            PageResponses = new List<PageResponse>();
+            PageUrls = new List<string>();
+        }
     }
 }

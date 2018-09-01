@@ -20,6 +20,8 @@ namespace WebsitePerformance.Controllers
 {
     public class HomeController : Controller
     {
+        private const int NumOfRequests = 2;
+
         private readonly ApplicationDbContext _db;
 
         public HomeController()
@@ -87,26 +89,14 @@ namespace WebsitePerformance.Controllers
             {
                 try
                 {
-                    var responseUrls = GetSitemapUrls(url);
-                    var site = new Site() { Url = url, Id = _db.Sites.Count() + 1};
-                    _db.Sites.Add(site);
-                    foreach (var response in responseUrls)
+                    var pageUrls = GetSitemapUrls(url);
+                    var site = new Site() { Url = url };
+                    foreach (var pageUrl in pageUrls)
                     {
-                        var resTime = sendReqAndMeasureResTime(response);
-                        _db.PageResponses.Add(new PageResponse()
-                        {
-                            ResponseTime = resTime,
-                            Url = response,
-                            SiteId = site.Id
-                        });
-                        site.PageUrls.Add(response);
-                        site.PageResponses.Add(new PageResponse()
-                        {
-                            ResponseTime = resTime,
-                            Url = response,
-                            SiteId = site.Id
-                        });
+                        site.PageUrls.Add(pageUrl);
+                        site.PageResponses.AddRange(MeasureResponseTime(site, pageUrl));
                     }
+                    _db.Sites.Add(site);
                 }
                 catch (WebException e)
                 {
@@ -117,6 +107,24 @@ namespace WebsitePerformance.Controllers
 
             _db.SaveChanges();
             return View("Index", CreateAddModelView(url));
+        }
+
+        private List<PageResponse> MeasureResponseTime(Site site, string pageUrl)
+        {
+            var pageResponses = new List<PageResponse>();
+            for (int i = 0; i < NumOfRequests; i++)
+            {
+                var resTime = sendReqAndMeasureResTime(pageUrl);
+                var pRes = new PageResponse()
+                {
+                    ResponseTime = resTime,
+                    Url = pageUrl,
+                    SiteId = site.Id
+                };
+                pageResponses.Add(pRes);
+            }
+            
+            return pageResponses;
         }
 
         private List<string> GetSitemapUrls(string url)
