@@ -40,17 +40,17 @@ namespace WebsitePerformance.Controllers
         {
             var pageResponses = new List<Tuple<string, int, int>>();
             var siteInDb = _db.Sites.Single(s => s.Url == url);
-            foreach (var pageUrl in siteInDb.PageUrls)
+            foreach (var page in siteInDb.Pages)
             {
-                pageResponses.Add(new Tuple<string, int, int>(pageUrl,
-                    _db.PageResponses.ToList().FindAll(p => p.Url == pageUrl).Max(u => u.ResponseTime),
-                    _db.PageResponses.ToList().FindAll(p => p.Url == pageUrl).Min(u => u.ResponseTime)));
+                pageResponses.Add(new Tuple<string, int, int>(page.Url,
+                    siteInDb.PageResponses.FindAll(p => p.Url == page.Url).Max(u => u.ResponseTime),
+                    siteInDb.PageResponses.FindAll(p => p.Url == page.Url).Min(u => u.ResponseTime)));
             }
             return new AddModelView
             {
-                PageResponses = pageResponses,
+                PageResponses = pageResponses.OrderByDescending(u => u.Item2).ToList(), 
 
-                MaxTimeJSON = JsonConvert.SerializeObject(_db.Sites.Single(u => u.Url == url)
+                MaxTime = JsonConvert.SerializeObject(siteInDb
                     .PageResponses.Select(r => new
                     {
                         label = r.Url,
@@ -58,7 +58,7 @@ namespace WebsitePerformance.Controllers
                             .FindAll(p => p.Url == r.Url).Max(u => u.ResponseTime)
                     }).DistinctBy(s => s.label)),
 
-                MinTimeJSON = JsonConvert.SerializeObject(_db.Sites.Single(u => u.Url == url)
+                MinTime = JsonConvert.SerializeObject(siteInDb
                     .PageResponses.Select(r => new
                     {
                         label = r.Url,
@@ -78,11 +78,10 @@ namespace WebsitePerformance.Controllers
             var siteInDb = _db.Sites.SingleOrDefault(s => s.Url == url);
             if (siteInDb != null)
             {
-                foreach (var pageUrl in siteInDb.PageUrls)
+                foreach (var page in siteInDb.Pages)
                 {
-                    var resTime = sendReqAndMeasureResTime(pageUrl);
-                    _db.PageResponses.Add(new PageResponse() {ResponseTime = resTime, SiteId = siteInDb.Id, Url = pageUrl});
-                    siteInDb.PageResponses.Add(new PageResponse() { ResponseTime = resTime, SiteId = siteInDb.Id, Url = pageUrl });
+                    _db.PageResponses.RemoveRange(_db.PageResponses.Where(s => s.Id == siteInDb.Id));
+                    siteInDb.PageResponses.AddRange(MeasureResponseTime(siteInDb, page.Url));
                 }
             }
             else
@@ -93,7 +92,7 @@ namespace WebsitePerformance.Controllers
                     var site = new Site() { Url = url };
                     foreach (var pageUrl in pageUrls)
                     {
-                        site.PageUrls.Add(pageUrl);
+                        site.Pages.Add(new Models.Page(){ Url = pageUrl });
                         site.PageResponses.AddRange(MeasureResponseTime(site, pageUrl));
                     }
                     _db.Sites.Add(site);

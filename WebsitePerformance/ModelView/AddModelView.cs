@@ -10,7 +10,7 @@ namespace WebsitePerformance.ModelView
     public class AddModelView
     {
         public List<Tuple<string, int, int>> PageResponses { get; set; }
-        public string MinTimeJSON { get; set; }
-        public string MaxTimeJSON { get; set; }
+        public string MinTime { get; set; }
+        public string MaxTime { get; set; }
     }
 }

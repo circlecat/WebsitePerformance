@@ -16,7 +16,7 @@
         </div>
 
         <div class="form-group">
-            <button type="submit" class="btn btn-primary">Get sitemap</button>
+            <button type="submit" class="btn btn-primary">Measure Response Time</button>
         </div>
     }
 </div>
@@ -70,13 +70,13 @@
 
                 showInLegend: "true",
 
-                dataPoints: @Html.Raw(Model.MinTimeJSON)
+                dataPoints: @Html.Raw(Model.MinTime)
             }, {
                 type: "column",
                 legendText: "Max response time",
                 showInLegend: "true",
 
-                dataPoints: @Html.Raw(Model.MaxTimeJSON)
+                dataPoints: @Html.Raw(Model.MaxTime)
             }
             ]
         });

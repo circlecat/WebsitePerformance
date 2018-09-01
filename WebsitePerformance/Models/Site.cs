@@ -11,14 +11,14 @@ namespace WebsitePerformance.Models
         [Required]
         public string Url { get; set; }
 
-        public List<string> PageUrls { get; set; }
+        public virtual List<Page> Pages { get; set; }
 
-        public List<PageResponse> PageResponses { get; set; }
+        public virtual List<PageResponse> PageResponses { get; set; }
 
         public Site()
         {
             PageResponses = new List<PageResponse>();
-            PageUrls = new List<string>();
+            Pages = new List<Page>();
         }
     }
 }

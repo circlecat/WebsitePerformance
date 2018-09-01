@@ -52,35 +52,5 @@ namespace WebsitePerformance.Helpers
             }
             return resultUrl;
         }
-
-        /*var pageResponses = new List<Tuple<string, int,int>>();
-            var siteInDb = _db.Sites.Single(u => u.Url == url);
-            foreach (var res in siteInDb.PageUrls)
-            {
-                pageResponses.Add(new Tuple<string, int, int>(res,
-                    _db.PageResponses.ToList().FindAll(p => p.Url == res).Max(u => u.ResponseTime),
-                    _db.PageResponses.ToList().FindAll(p => p.Url == res).Min(u => u.ResponseTime)));
-            }
-
-            return new AddModelView
-            {
-                PageResponses = pageResponses,
-
-                MaxTimeJSON = JsonConvert.SerializeObject(_db.Sites.Single(u => u.Url == url)
-                .PageResponses.DistinctBy(s => s.Url).Select(r => new
-                {
-                    label = r.Url,
-                    y = _db.PageResponses.ToList()
-                        .FindAll(p => p.Url == r.Url).Max(u => u.ResponseTime)
-                })),
-
-                MinTimeJSON = JsonConvert.SerializeObject(_db.Sites.Single(u => u.Url == url)
-                .PageResponses.DistinctBy(s => s.Url).Select(r => new
-                {
-                    label = r.Url,
-                    y = _db.PageResponses.ToList()
-                        .FindAll(p => p.Url == r.Url).Min(u => u.ResponseTime)
-                }))
-            };*/
     }
 }
