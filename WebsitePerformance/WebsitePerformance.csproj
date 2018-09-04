@@ -153,9 +153,9 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\SiteMapHelper.cs" />
-    <Compile Include="Migrations\201809010756039_Create table.cs" />
-    <Compile Include="Migrations\201809010756039_Create table.Designer.cs">
-      <DependentUpon>201809010756039_Create table.cs</DependentUpon>
+    <Compile Include="Migrations\201809041348258_Create tables resultstore.cs" />
+    <Compile Include="Migrations\201809041348258_Create tables resultstore.Designer.cs">
+      <DependentUpon>201809041348258_Create tables resultstore.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
@@ -224,8 +224,8 @@
     <Content Include="Scripts\jquery-3.3.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201809010756039_Create table.resx">
-      <DependentUpon>201809010756039_Create table.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201809041348258_Create tables resultstore.resx">
+      <DependentUpon>201809041348258_Create tables resultstore.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

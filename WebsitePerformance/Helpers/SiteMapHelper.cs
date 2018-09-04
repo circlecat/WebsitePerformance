@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -51,6 +52,26 @@ namespace WebsitePerformance.Helpers
                 }
             }
             return resultUrl;
+        }
+
+        public static int SendReqAndMeasureResTime(string url)
+        {
+            var timer = new Stopwatch();
+            timer.Start();
+
+            var request = WebRequest.Create(url);
+            try
+            {
+                using (request.GetResponse()) { }
+            }
+            catch (Exception)
+            {
+                // ignore all exceptions
+            }
+
+            timer.Stop();
+            var time = timer.Elapsed.Milliseconds;
+            return time;
         }
     }
 }

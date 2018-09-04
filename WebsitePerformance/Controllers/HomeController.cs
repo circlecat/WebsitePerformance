@@ -20,7 +20,7 @@ namespace WebsitePerformance.Controllers
 {
     public class HomeController : Controller
     {
-        private const int NumOfRequests = 2;
+        private const int NumOfRequests = 5;
 
         private readonly ApplicationDbContext _db;
 
@@ -115,7 +115,7 @@ namespace WebsitePerformance.Controllers
             var pageResponses = new List<PageResponse>();
             for (int i = 0; i < NumOfRequests; i++)
             {
-                var resTime = sendReqAndMeasureResTime(pageUrl);
+                var resTime = SiteMapHelper.SendReqAndMeasureResTime(pageUrl);
                 var pRes = new PageResponse()
                 {
                     ResponseTime = resTime,
@@ -141,29 +141,7 @@ namespace WebsitePerformance.Controllers
             }
 
             return result;
-        }
-
-        
-
-        private int sendReqAndMeasureResTime(string url)
-        {
-            var timer = new Stopwatch();
-            timer.Start();
-
-            var request = WebRequest.Create(url);
-            try
-            {
-                using (request.GetResponse()) { }
-            }
-            catch (Exception)
-            {
-                // ignore all exceptions
-            }
-
-            timer.Stop();
-            var time = timer.Elapsed.Milliseconds;
-            return time;
-        }
+        } 
 
         public ActionResult ViewResults(string siteurl) => View("Index", CreateAddModelView(siteurl));
     }
