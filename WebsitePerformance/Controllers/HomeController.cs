@@ -77,6 +77,9 @@ namespace WebsitePerformance.Controllers
             if (!ModelState.IsValid)
                 return View("Index", new AddModelView(){PageResponses = null, Sites = _db.Sites.ToList() });
 
+            if (!url.EndsWith("/"))
+                url = url + "/";
+
             var siteInDb = _db.Sites.SingleOrDefault(s => s.Url == url);
             if (siteInDb != null)
             {
